@@ -53,9 +53,10 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.56.1")
     ksp("com.google.dagger:hilt-android-compiler:2.56.1")
     // DataStore Preferences
-    implementation("androidx.datastore:datastore-preferences:1.1.5")
+    implementation("androidx.datastore:datastore-preferences:1.1.4")
+    implementation ("androidx.datastore:datastore-core-android:1.1.4")
     // DataStore Proto
-    implementation("androidx.datastore:datastore:1.1.5")
+    implementation("androidx.datastore:datastore:1.1.4")
     // JSON serialization library, works with the Kotlin serialization plugin
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 

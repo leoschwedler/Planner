@@ -5,5 +5,6 @@ data class ProfileState(
     val email: String = "",
     val telephone: String = "",
     val image: String = "",
-    val isProfileValid: Boolean = false
+    val isProfileValid: Boolean = false,
+    val isTokenValid: Boolean = false
 )

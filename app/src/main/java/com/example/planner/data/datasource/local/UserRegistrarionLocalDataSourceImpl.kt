@@ -2,6 +2,7 @@ package com.example.planner.data.datasource.local
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import com.example.planner.data.model.Profile
@@ -12,6 +13,8 @@ import javax.inject.Inject
 private const val USER_REGISTRATION_FILE_NAME = "user_registration"
 private const val PROFILE_FILE_NAME = "profile.db"
 private const val IS_USER_REGISTERED = "is_user_registered"
+
+
 
 
 class UserRegistrarionLocalDataSourceImpl @Inject constructor(private val applicationContext: Application) :
@@ -40,6 +43,12 @@ class UserRegistrarionLocalDataSourceImpl @Inject constructor(private val applic
         get() = applicationContext.protoDataStore.data
 
     override suspend fun saveProfile(profile: Profile) {
-        applicationContext.protoDataStore.updateData { profile }
+        try {
+            applicationContext.protoDataStore.updateData {
+                profile
+            }
+        } catch (e: Exception) {
+            Log.e("ProtoSaveError", "Erro ao salvar no ProtoDataStore: ${e.message}", e)
+        }
     }
 }
