@@ -4,18 +4,28 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.planner.data.model.Profile
+import com.example.planner.data.repository.AuthenticationRepository
 import com.example.planner.data.repository.UserRepository
 import com.example.planner.presentation.state.ProfileState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private val mockToken =
+    """ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30 """
+
 @HiltViewModel
-class UserRegistrationViewModel @Inject constructor(private val userRepository: UserRepository) :
+class UserRegistrationViewModel @Inject constructor(
+    private val userRepository: UserRepository,
+    private val authenticationRepository: AuthenticationRepository
+) :
     ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileState())
@@ -26,20 +36,43 @@ class UserRegistrationViewModel @Inject constructor(private val userRepository: 
     }
 
     private fun observerProfile() {
-        viewModelScope.launch {
-            userRepository.getUserProfile().catch {
-                Log.d("UserRegistrationViewModel", "Erro ao obter profile: ${it.message}")
-            }.collect { profile ->
-                _uiState.update {
-                    it.copy(
-                        name = profile.name,
-                        email = profile.email,
-                        telephone = profile.telephone,
-                        image = profile.image
-                    )
+        viewModelScope.apply {
+            launch {
+                userRepository.getUserProfile().catch {
+                    Log.d("UserRegistrationViewModel", "Erro ao obter profile: ${it.message}")
+                }.collect { profile ->
+                    _uiState.update {
+                        it.copy(
+                            name = profile.name,
+                            email = profile.email,
+                            telephone = profile.telephone,
+                            image = profile.image
+                        )
+                    }
+                }
+            }
+            launch {
+                while (true) {
+                    val tokenExpirationDateTime =
+                        authenticationRepository.getExpirationDateTime().firstOrNull()
+                    tokenExpirationDateTime?.let { tokenExpirationDateTime ->
+                        val dateTimeNow = System.currentTimeMillis()
+                        Log.d("CheckToken", "Token valid: ${_uiState.value.isTokenValid}")
+                        _uiState.update { it.copy(isTokenValid = tokenExpirationDateTime >= dateTimeNow) }
+                    }
+                    delay(5_000)
                 }
             }
         }
+
+    }
+
+    fun obtainNewToken() {
+        viewModelScope.launch {
+            authenticationRepository.insertToken(token = mockToken)
+            _uiState.update { it.copy(isTokenValid = true) }
+        }
+
     }
 
     fun getIsUserRegistered(): Boolean {
@@ -49,16 +82,22 @@ class UserRegistrationViewModel @Inject constructor(private val userRepository: 
         )
     }
 
-    fun saveProfile() {
+    fun saveProfile( onCompleted : () -> Unit) {
         viewModelScope.launch {
-            val profile = Profile(
-                name = uiState.value.name,
-                email = uiState.value.email,
-                telephone = uiState.value.telephone,
-                image = uiState.value.image
-            )
-            userRepository.saveUserProfile(profile)
-            userRepository.saveIsUserRegistered(isRegistered = true)
+            async {
+                val profile = Profile(
+                    name = uiState.value.name,
+                    email = uiState.value.email,
+                    telephone = uiState.value.telephone,
+                    image = uiState.value.image
+                )
+                Log.d("ProtoSaveError", "Chamando saveProfile com: $profile")
+                userRepository.saveUserProfile(profile)
+                userRepository.saveIsUserRegistered(isRegistered = true)
+                authenticationRepository.insertToken(token = mockToken)
+                _uiState.update { it.copy(isTokenValid = true) }
+            }.await()
+            onCompleted()
         }
     }
 

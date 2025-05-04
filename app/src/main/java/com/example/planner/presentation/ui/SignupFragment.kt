@@ -10,7 +10,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.planner.R
 import com.example.planner.databinding.FragmentSignupBinding
@@ -32,7 +34,7 @@ class SignupFragment : Fragment() {
             if (uri != null) {
                 binding.imageViewAdd.setImageURI(uri)
                 val imageBitMap = requireContext().imageUriToBitmap(uri)
-                if (imageBitMap != null){
+                if (imageBitMap != null) {
                     val imageBase64 = imageBitmapToBase64(bitmap = imageBitMap)
                     viewmodel.updateImage(image = imageBase64)
                 }
@@ -63,9 +65,11 @@ class SignupFragment : Fragment() {
 
     private fun setupObservers() {
         lifecycleScope.launch {
-            viewmodel.uiState.collect { state ->
-                with(binding) {
-                    buttonSaveUser.isEnabled = state.isProfileValid
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewmodel.uiState.collect { state ->
+                    with(binding) {
+                        buttonSaveUser.isEnabled = state.isProfileValid
+                    }
                 }
             }
         }
@@ -74,8 +78,7 @@ class SignupFragment : Fragment() {
     private fun setupClickListeners() {
         with(binding) {
             buttonSaveUser.setOnClickListener {
-                viewmodel.saveProfile()
-                navController.navigate(R.id.action_signupFragment_to_homeFragment)
+                viewmodel.saveProfile(onCompleted = { navController.navigate(R.id.action_signupFragment_to_homeFragment) })
             }
             imageViewAdd.setOnClickListener {
                 pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
