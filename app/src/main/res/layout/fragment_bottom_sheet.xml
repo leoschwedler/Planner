@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@color/zinc_900"
     android:padding="24dp"
-    tools:context=".commom.components.BottomSheetFragment">
+    tools:context=".presentation.components.BottomSheetFragment">
 
 
     <TextView

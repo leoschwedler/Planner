@@ -18,16 +18,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/imageViewAdd"
-        android:layout_width="128dp"
-        android:layout_height="128dp"
-        android:layout_marginTop="100dp"
-        android:src="@drawable/img_add_button"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardViewAdd"
+        android:layout_width="@dimen/huge_128dp"
+        android:layout_height="@dimen/huge_128dp"
+        app:cardCornerRadius="64dp"
+        android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/textView">
+
+        <ImageView
+            android:id="@+id/imageViewAdd"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/img_add_button" />
+
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+
+
+
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayoutName"
@@ -36,7 +50,7 @@
         android:layout_marginTop="100dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewAdd">
+        app:layout_constraintTop_toBottomOf="@+id/cardViewAdd">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextName"
@@ -86,6 +100,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textColor="@color/black"
+        android:enabled="false"
         android:textStyle="bold"
         android:background="@drawable/bg_button"
         android:layout_marginBottom="16dp"

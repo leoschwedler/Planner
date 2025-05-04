@@ -1,4 +1,4 @@
-package com.example.planner.commom.components
+package com.example.planner.presentation.components
 
 import android.os.Bundle
 import android.view.LayoutInflater
